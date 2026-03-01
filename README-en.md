@@ -492,7 +492,7 @@ After successful startup, access:
 
 ```
 ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
-│  User    │ →  │  Apply    │ →  │  Token   │ →  │  Create  │ →  │ MQ Async │ 
+│  User    │ →  │  Apply    │ →  │  Token   │ →  │  Create  │ →  │ MQ Async │
 │  Click   │     │  Token   │     │  Verify  │     │  Order   │     │  Process │
 │  Buy Now │     │          │     │ (Rate Limit)│    │          │     │          │
 └──────────┘     └──────────┘     └──────────┘     └──────────┘     └──────────┘
@@ -503,6 +503,90 @@ After successful startup, access:
                                │   Delay Detect   │ →  │   Reconciliation │
                                │   (10 seconds)   │    │   Compensation   │
                                └──────────────────┘    └──────────────────┘
+```
+
+### 📊 Database Design
+
+#### Sharding Strategy
+
+| Table | Sharding DB | Sharding Table | Description |
+|-------|-------------|-----------------|-------------|
+| tb_user | id % 2 | id % 2 | User table |
+| tb_user_info | user_id % 2 | user_id % 2 | User info table |
+| tb_user_phone | phone hash | phone hash | Phone number table |
+| tb_voucher | id % 2 | id % 2 | Voucher table |
+| tb_seckill_voucher | voucher_id % 2 | voucher_id / 2 % 2 | Flash sale voucher |
+| tb_voucher_order | user_id % 2 | voucher_id % 2 | Voucher order table |
+| tb_voucher_order_router | order_id hash | order_id / 2 % 2 | Order router table |
+| tb_voucher_reconcile_log | order_id hash | order_id / 2 % 2 | Reconciliation log |
+
+#### Broadcast Tables (Consistent across all DBs)
+
+| Table | Description |
+|-------|-------------|
+| tb_blog | Blog table |
+| tb_blog_comments | Blog comments table |
+| tb_follow | Follow table |
+| tb_shop | Shop table |
+| tb_shop_type | Shop type table |
+| tb_sign | Sign-in table |
+
+### ⚡ V2 Flash Sale Process
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     Flash Sale Flow (V2)                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  1. Get Access Token                                              │
+│     ├─ Token bucket rate limit check                             │
+│     ├─ Validate user qualification                               │
+│     └─ Generate and return accessToken                           │
+│                           │                                      │
+│                           ▼                                      │
+│  2. Submit Flash Sale Request                                    │
+│     ├─ Validate accessToken                                      │
+│     ├─ Token bucket rate limit check                             │
+│     └─ Enter flash sale core process                             │
+│                           │                                      │
+│                           ▼                                      │
+│  3. Lua Script Atomic Deduction                                   │
+│     ├─ Check activity time                                       │
+│     ├─ Check stock                                                │
+│     ├─ Check if already purchased                                 │
+│     ├─ Deduct stock                                               │
+│     ├─ Record purchased user                                      │
+│     └─ Write tracking log                                         │
+│                           │                                      │
+│                           ▼                                      │
+│  4. Send Kafka Message                                           │
+│     ├─ Async create order                                        │
+│     ├─ Order router table record                                 │
+│     └─ Reconciliation log record                                  │
+│                           │                                      │
+│                           ▼                                      │
+│  5. Poll Query Order Result                                      │
+│     ├─ Query Redis cache                                         │
+│     ├─ Query order router table                                  │
+│     └─ Return order status                                       │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Core Lua Script Logic
+
+```lua
+-- Flash Sale Core Lua Script Flow:
+1. Get current Redis server time
+2. Validate flash sale activity start/end time
+3. Validate voucher status (listed/delisted/expired)
+4. Get and validate stock
+5. Validate if user has already purchased (deduplication)
+6. Atomically deduct stock
+7. Record purchased user to Set
+8. Write tracking log to Hash
+9. Set key expiration time
+10. Return execution result (success/failure code)
 ```
 
 ### 🔐 Core Code Examples
@@ -675,6 +759,50 @@ hmdp:
 | 6 | Duplicate Consumption | Consumer Idempotent + Reconciliation | `SeckillVoucherConsumer` |
 | 7 | Data Consistency | Redis Pre-Dec → MQ → DB → Reconciliation | `ReconciliationTaskService` |
 | 8 | Hot Data | Local Cache + Hot Detection | `SeckillVoucherLocalCache` |
+
+### 🔧 Key Problem Solutions
+
+#### 1. Cache Penetration & Breakdown
+
+| Problem | Solution |
+|---------|----------|
+| Cache Penetration | Null Cache + Bloom Filter |
+| Cache Breakdown | Local Cache + Double Lock + Logical Expire |
+| Cache Avalanche | Random TTL + Multi-level Cache |
+
+#### 2. High Concurrency Flash Sale
+
+| Problem | Solution |
+|---------|----------|
+| Overselling | Lua Script Atomic Stock Deduction |
+| Duplicate Order | Redis Set Deduplication + DB Unique Index |
+| Traffic Control | Token Pre-auth + Token Bucket Rate Limit |
+| Async Order | Kafka Message Queue + Delay Queue Compensation |
+
+#### 3. Data Consistency
+
+| Scenario | Solution |
+|----------|----------|
+| Redis/MySQL Inconsistency | Reconciliation Log + Scheduled Compensation |
+| Message Loss | Publish Callback + Local Message Table |
+| Duplicate Consumption | Idempotent Component + Deduplication Table |
+
+#### 4. Sharding
+
+| Problem | Solution |
+|---------|----------|
+| Data Routing | ShardingSphere Standard Sharding Strategy |
+| Global ID | Snowflake Algorithm |
+| Cross-shard Query | Order Router Table |
+
+### 📊 Performance Metrics
+
+| Metric | Value | Description |
+|--------|-------|-------------|
+| **Single Machine QPS** | 5000+ QPS | Flash sale endpoint |
+| **Stock Deduction** | Lua Atomic Operation | No overselling |
+| **Message Latency** | < 100ms | Kafka end-to-end |
+| **Cache Hit Rate** | > 95% | Multi-level cache |
 
 ---
 
