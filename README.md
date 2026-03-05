@@ -1,6 +1,6 @@
 # HMDP-Ultra 黑马点评Ultra项目完整代码
 
-> 🔥🔥 **热门推荐** 🔥🔥 黑马点评Plus升级版实战项目，基于本地生活与商户运营场景的全面重构
+> 🔥🔥 **热门推荐** 🔥🔥 黑马点评升级版实战项目，基于本地生活与商户运营场景的全面重构
 
 [![Stars](https://img.shields.io/github/stars/AlanSmithDev/hmdp-ultra?style=flat-square&logo=github)](https://github.com/AlanSmithDev/hmdp-ultra)
 [![Forks](https://img.shields.io/github/forks/AlanSmithDev/hmdp-ultra?style=flat-square&logo=github)](https://github.com/AlanSmithDev/hmdp-ultra)
