@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/hmdp-common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/hmdp-core-service/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/hmdp-id-generator-framework/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/hmdp-mq-framework/hmdp-mq-common-framework/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/hmdp-mq-framework/hmdp-mq-consumer-framework/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/hmdp-mq-framework/hmdp-mq-producer-framework/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/hmdp-mq-framework/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/hmdp-parameter/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/hmdp-redis-tool-framework/hmdp-redis-common-framework/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/hmdp-redis-tool-framework/hmdp-redis-framework/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/hmdp-redis-tool-framework/hmdp-redis-rate-limit-framework/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/hmdp-redis-tool-framework/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/hmdp-redisson-framework/hmdp-redisson-service-framework/hmdp-bloom-filter-framework/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/hmdp-redisson-framework/hmdp-redisson-service-framework/hmdp-redisson-common-framework/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/hmdp-redisson-framework/hmdp-redisson-service-framework/hmdp-repeat-execute-limit-framework/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/hmdp-redisson-framework/hmdp-redisson-service-framework/hmdp-service-lock-framework/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/hmdp-redisson-framework/hmdp-redisson-service-framework/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/hmdp-redisson-framework/hmdp-service-delay-queue-framework/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/hmdp-redisson-framework/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/hmdp-sharding/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+  </component>
+</project>
